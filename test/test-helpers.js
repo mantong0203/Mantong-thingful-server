@@ -222,15 +222,26 @@ function makeThingsFixtures() {
 }
 
 function cleanTables(db) {
-  return db.raw(
+  return db.transaction(trx =>
+    trx.raw(
     `TRUNCATE
       thingful_things,
       thingful_users,
       thingful_reviews
-      RESTART IDENTITY CASCADE`
+     `
   )
+    .then(() =>
+      Promise.all([
+        trx.raw(`ALTER SEQUENCE thingful_things_id_seq minvalue 0 START WITH 1`),
+        trx.raw(`ALTER SEQUENCE thingful_users_id_seq minvalue 0 START WITH 1`),
+        trx.raw(`ALTER SEQUENCE thingful_reviews_id_seq minvalue 0 START WITH 1`),
+        trx.raw(`SELECT setval('thingful_things_id_seq', 0)`),
+        trx.raw(`SELECT setval('thingful_users_id_seq', 0)`),
+        trx.raw(`SELECT setval('thingful_reviews_id_seq', 0)`),
+    ])
+  )
+ )
 }
-
 function seedUsers(db, users) {
   const preppedUsers = users.map(user => ({
     ...user,
@@ -247,13 +258,20 @@ function seedUsers(db, users) {
 }
 
 function seedThingsTables(db, users, things, reviews=[]) {
-  return db.transacton(async trx => {
+  return db.transaction(async trx => {
     await seedUsers(trx, users)
     await trx.into('thingful_things').insert(things)  
     await trx.raw(
         `SELECT setval('thingful_things_id_seq', ?)`,
         [things[things.length - 1].id],
     )
+    if(reviews.length){
+      await trx.into('thingful_reviews').insert(reviews)
+      await trx.raw(
+        `SELECT setval('thingful_reviews_id_seq', ?)`,
+        [reviews[reviews.length - 1].id],
+      )
+    }
  })
 }
 
