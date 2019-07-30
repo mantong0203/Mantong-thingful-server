@@ -33,7 +33,7 @@ describe('Reviews Endpoints', function() {
       )
     )
 
-    it(`creates an review, responding with 201 and the new review`, function() {
+    it(`creates a review, responding with 201 and the new review`, function() {
       this.retries(3)
       const testThing = testThings[0]
       const testUser = testUsers[0]
@@ -41,7 +41,6 @@ describe('Reviews Endpoints', function() {
         text: 'Test new review',
         rating: 3,
         thing_id: testThing.id,
-        
       }
       return supertest(app)
         .post('/api/reviews')

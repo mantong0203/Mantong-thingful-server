@@ -143,7 +143,7 @@ describe('Things Endpoints', function() {
       it('removes XSS attack content', () => {
         return supertest(app)
           .get(`/api/things/${maliciousThing.id}`)
-          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .set('Authorization', helpers.makeAuthHeader(testUser))
           .expect(200)
           .expect(res => {
             expect(res.body.title).to.eql(expectedThing.title)
@@ -158,7 +158,7 @@ describe('Things Endpoints', function() {
       beforeEach(() =>
        db.into('thingful_users').insert(testUsers)
       )
-      
+
       it(`responds with 404`, () => {
         const thingId = 123456
         return supertest(app)
